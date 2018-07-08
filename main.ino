@@ -79,8 +79,6 @@ void print_measurement(int latest_measurement) {
 
 
   for (int i = 0; i < measurement_history_chars; i++) {
-    Serial.print("Print char plot:");
-    Serial.println(i);
     printArray(sliced_measurement_history.plot_char[i], 5);
     LCD_plot_char * plot_char = new LCD_plot_char(sliced_measurement_history.plot_char[i]);
     plot_char->createChar(i);    

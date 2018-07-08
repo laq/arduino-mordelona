@@ -34,8 +34,10 @@ class LCD_plot_char {
     }
 
     int get_column_value(int column){
-      int column_value[5] = {16, 8, 4, 2, 1};
-      return column_value[column];
+      //int column_value[5] = {16, 8, 4, 2, 1};
+      short exponent = 4 - column;
+      short power = 1<<exponent; // 2^exponent
+      return power;
     }
 
     
