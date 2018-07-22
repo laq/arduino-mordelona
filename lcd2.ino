@@ -17,8 +17,15 @@ LiquidCrystal lcd(rs, en, d[4], d[5], d[6], d[7]);
 //END lcd init
 
 int get_next_measurement() {
-  float number = rand() % 8;
-  return number;
+  int value = rand() % 255;
+  return value >> 5;
+}
+
+//TO complete, should be inside LCD plot char, because the number of buckets depends on the screen line height.
+int scale_measurement(int min_value, int max_value, int current_value){
+  int bucket_size = (max_value-min_value)/9;
+  int scaled = current_value / bucket_size;
+  return scaled;
 }
 
 
@@ -43,9 +50,11 @@ class Measurement_History {
     const static int history_size = 40;
     const static int history_chars = history_size / 5; // cuts lower and should have bound of 8
 
-
     int history[history_size];
+    int max_value = 255;
+    int min_value = 0;
     String name = "Temperature";
+
     Measurement_History(String measurement_name) {
       name = measurement_name;
     }
@@ -56,7 +65,7 @@ class Measurement_History {
         history[i] = history[i + 1];
       }
       history[history_size - 1] = measurement;
-    }
+    }    
 };
 
 class LCD_plot_char {
@@ -73,8 +82,8 @@ class LCD_plot_char {
       }
     }
 
-    void createChar(int char_num) {
-      lcd.createChar(char_num, plot_char);
+    void createChar(int lcd_save_pos) {
+      lcd.createChar(lcd_save_pos, plot_char);
     }
 
     int get_column_value(int column) {
@@ -144,6 +153,12 @@ int current_plot_seconds = 0;
 void loop() {
   Serial.println("Start");
 
+  if (current_plot_seconds > 10) {
+    current_plot_seconds = 0;
+    current_hist = (current_hist + 1) % 2;
+    lcd.clear();  
+  }
+
   update_measurement(temperature_hist);
   update_measurement(humidity_hist);
 
@@ -154,10 +169,7 @@ void loop() {
     print_measurement_data(humidity_hist);
   }
   current_plot_seconds++;
-  if (current_plot_seconds > 10) {
-    current_plot_seconds = 0;
-    current_hist = (current_hist + 1) % 2;
-  }
+
 
   Serial.print("Ram:");
   Serial.println(freeRam());
