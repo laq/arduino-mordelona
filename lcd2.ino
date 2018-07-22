@@ -35,7 +35,7 @@ int scale_measurement(int min_value, int max_value, int current_value){
 }
 
 
-void printArray(short array[], int size) {
+void printArray(int array[], int size) {
   Serial.print("[");
   for (int i = 0; i < size; i++) {
     Serial.print(array[i]);
@@ -53,19 +53,19 @@ int freeRam () {
 
 class Measurement_History {
   public:
-    const static short history_size = 40;
-    const static short history_chars = history_size / 5; // cuts lower and should have bound of 8
+    const static int history_size = 40;
+    const static int history_chars = history_size / 5; // cuts lower and should have bound of 8
 
-    short history[history_size];
-    short max_value = 255;
-    short min_value = 0;
+    int history[history_size];
+    int max_value = 255;
+    int min_value = 0;
     String name = "Temperature";
 
     Measurement_History(String measurement_name) {
       name = measurement_name;
     }
 
-    void add_measurement(short measurement) {
+    void add_measurement(int measurement) {
       //slide measurements forgetting oldest
       for (int i = 0; i < history_size - 1; i++) {
         history[i] = history[i + 1];
@@ -79,7 +79,7 @@ class LCD_plot_char {
     byte plot_char[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
   public:
-    LCD_plot_char(short plot[5]) {
+    LCD_plot_char(int plot[5]) {
       for (int i = 0; i < 5; i++) {
         int row = 8 - plot[i];
         for (int j = row; j < 8; j++) {
@@ -94,8 +94,8 @@ class LCD_plot_char {
 
     int get_column_value(int column) {
       //int column_value[5] = {16, 8, 4, 2, 1};
-      short exponent = 4 - column;
-      short power = 1 << exponent; // 2^exponent
+      int exponent = 4 - column;
+      int power = 1 << exponent; // 2^exponent
       return power;
     }
 };
@@ -150,7 +150,6 @@ void setup() {
   lcd.blink();
   lcd.print("Start :)...");
   delay(2000);
-
 }
 
 Measurement_History temperature_hist = Measurement_History("Temperature");
