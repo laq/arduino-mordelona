@@ -110,22 +110,7 @@ class LCD_Printer {
     }
 };
 
-
-
-
-Measurement_History temperature_hist = Measurement_History("Temperature");
-
-void setup() {
-  Serial.begin(9600);
-  lcd.begin(16, 2);
-  lcd.blink();
-  lcd.print("Start :)...");
-  delay(2000);
-
-}
-
 void update_measurement(Measurement_History &measurement_hist);
-
 void update_measurement(Measurement_History &measurement_hist) {
   int latest_measurement;
   latest_measurement = get_next_measurement();
@@ -141,13 +126,38 @@ void print_measurement_data(Measurement_History &measurement) {
   LCD_Printer::plot(measurement, 1, 0);
 }
 
+void setup() {
+  Serial.begin(9600);
+  lcd.begin(16, 2);
+  lcd.blink();
+  lcd.print("Start :)...");
+  delay(2000);
 
+}
+
+Measurement_History temperature_hist = Measurement_History("Temperature");
+Measurement_History humidity_hist = Measurement_History("Humidity");
+
+int current_hist = 1;
+int current_plot_seconds = 0;
 
 void loop() {
   Serial.println("Start");
 
   update_measurement(temperature_hist);
-  print_measurement_data(temperature_hist);
+  update_measurement(humidity_hist);
+
+  if (current_hist == 0) {
+    print_measurement_data(temperature_hist);
+  }
+  else {
+    print_measurement_data(humidity_hist);
+  }
+  current_plot_seconds++;
+  if (current_plot_seconds > 10) {
+    current_plot_seconds = 0;
+    current_hist = (current_hist + 1) % 2;
+  }
 
   Serial.print("Ram:");
   Serial.println(freeRam());
