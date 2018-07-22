@@ -18,7 +18,13 @@ LiquidCrystal lcd(rs, en, d[4], d[5], d[6], d[7]);
 
 int get_next_measurement() {
   int value = rand() % 255;
-  return value >> 5;
+  return value;
+}
+
+//simple scale to 8 buckets
+int scale_measurement(int current_value){  
+  int scaled = current_value >> 5;
+  return scaled;
 }
 
 //TO complete, should be inside LCD plot char, because the number of buckets depends on the screen line height.
@@ -29,7 +35,7 @@ int scale_measurement(int min_value, int max_value, int current_value){
 }
 
 
-void printArray(int array[], int size) {
+void printArray(short array[], int size) {
   Serial.print("[");
   for (int i = 0; i < size; i++) {
     Serial.print(array[i]);
@@ -47,19 +53,19 @@ int freeRam () {
 
 class Measurement_History {
   public:
-    const static int history_size = 40;
-    const static int history_chars = history_size / 5; // cuts lower and should have bound of 8
+    const static short history_size = 40;
+    const static short history_chars = history_size / 5; // cuts lower and should have bound of 8
 
-    int history[history_size];
-    int max_value = 255;
-    int min_value = 0;
+    short history[history_size];
+    short max_value = 255;
+    short min_value = 0;
     String name = "Temperature";
 
     Measurement_History(String measurement_name) {
       name = measurement_name;
     }
 
-    void add_measurement(int measurement) {
+    void add_measurement(short measurement) {
       //slide measurements forgetting oldest
       for (int i = 0; i < history_size - 1; i++) {
         history[i] = history[i + 1];
@@ -73,7 +79,7 @@ class LCD_plot_char {
     byte plot_char[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
   public:
-    LCD_plot_char(int plot[5]) {
+    LCD_plot_char(short plot[5]) {
       for (int i = 0; i < 5; i++) {
         int row = 8 - plot[i];
         for (int j = row; j < 8; j++) {
@@ -124,8 +130,11 @@ void update_measurement(Measurement_History &measurement_hist) {
   int latest_measurement;
   latest_measurement = get_next_measurement();
   Serial.print("Measurement:");
-  Serial.println(latest_measurement);
-  measurement_hist.add_measurement(latest_measurement);
+  Serial.print(latest_measurement);
+  int scaled_measurement = scale_measurement(latest_measurement);
+  Serial.print("->");
+  Serial.println(scaled_measurement);
+  measurement_hist.add_measurement(scaled_measurement);
 
 }
 
