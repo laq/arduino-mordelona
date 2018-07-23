@@ -16,14 +16,14 @@ LiquidCrystal lcd(rs, en, d[4], d[5], d[6], d[7]);
 
 //END lcd init
 
-int get_next_measurement() {
-  int value = rand() % 255;
+byte get_next_measurement() {
+  byte value = rand() % 255;
   return value;
 }
 
 //simple scale to 8 buckets
-int scale_measurement(int current_value) {
-  int scaled = current_value >> 5;
+byte scale_measurement(byte current_value) {
+  byte scaled = current_value >> 5;
   return scaled;
 }
 
@@ -35,7 +35,7 @@ int scale_measurement(int min_value, int max_value, int current_value) {
 }
 
 
-void printArray(int array[], int size) {
+void printArray(byte array[], int size) {
   Serial.print("[");
   for (int i = 0; i < size; i++) {
     Serial.print(array[i]);
@@ -56,7 +56,7 @@ class Measurement_History {
     const static int history_size = 40;
     const static int history_chars = history_size / 5; // cuts lower and should have bound of 8
 
-    int history[3][history_size]; // 0 == seconds, 1 == minutes, 2 == hours
+    byte history[3][history_size]; // 0 == seconds, 1 == minutes, 2 == hours
     int current_count[2] = {0, 0};
     int current_sum[2] = {0, 0};
 
@@ -71,18 +71,18 @@ class Measurement_History {
       name = measurement_name;
     }
 
-    void add_measurement(int measurement) {
+    void add_measurement(byte measurement) {
       add_measurement(measurement, 0); // add seconds measurment
     }
 
-    void add_measurement(int measurement, int history[]) {
+    void add_measurement(byte measurement, byte history[]) {
       for (int i = 0; i < history_size - 1; i++) {
         history[i] = history[i + 1];
       }
       history[history_size - 1] = measurement;
     }
 
-    void add_measurement(int measurement, int time_scale) {
+    void add_measurement(byte measurement, int time_scale) {
       add_measurement(measurement, history[time_scale]);
       if (time_scale < 3) {
         current_count[time_scale]++;
@@ -102,7 +102,7 @@ class LCD_plot_char {
     byte plot_char[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
   public:
-    LCD_plot_char(int plot[5]) {
+    LCD_plot_char(byte plot[5]) {
       for (int i = 0; i < 5; i++) {
         int row = 8 - plot[i];
         for (int j = row; j < 8; j++) {
@@ -132,7 +132,7 @@ class LCD_Printer {
       lcd.print(measurement.history[0][measurement.history_size - 1]);
     }
 
-    static void plot(int history[], int col, int row) {
+    static void plot(byte history[], int col, int row) {
       for (int i = 0; i < Measurement_History::history_chars; i++) {
         if (DEBUG_LEVEL > 5) {
           printArray(history + (char_width * i), char_width);
@@ -150,11 +150,11 @@ class LCD_Printer {
 
 void update_measurement(Measurement_History &measurement_hist);
 void update_measurement(Measurement_History &measurement_hist) {
-  int latest_measurement;
+  byte latest_measurement;
   latest_measurement = get_next_measurement();
   Serial.print("Measurement:");
   Serial.print(latest_measurement);
-  int scaled_measurement = scale_measurement(latest_measurement);
+  byte scaled_measurement = scale_measurement(latest_measurement);
   Serial.print("->");
   Serial.println(scaled_measurement);
   measurement_hist.add_measurement(scaled_measurement);
