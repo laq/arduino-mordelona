@@ -184,10 +184,6 @@ void setup() {
 
 }
 
-
-
-
-
 int current_measurement = 0;
 int current_time_scale = 0;
 int current_plot_seconds = 0;
@@ -221,10 +217,7 @@ void loop() {
       print_measurement_data(m_light, current_time_scale);
       break;
   }
-
-
   current_plot_seconds++;
-
 
   Serial.print("Ram:");
   Serial.println(freeRam());
