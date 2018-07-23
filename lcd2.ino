@@ -22,14 +22,14 @@ int get_next_measurement() {
 }
 
 //simple scale to 8 buckets
-int scale_measurement(int current_value){  
+int scale_measurement(int current_value) {
   int scaled = current_value >> 5;
   return scaled;
 }
 
 //TO complete, should be inside LCD plot char, because the number of buckets depends on the screen line height.
-int scale_measurement(int min_value, int max_value, int current_value){
-  int bucket_size = (max_value-min_value)/9;
+int scale_measurement(int min_value, int max_value, int current_value) {
+  int bucket_size = (max_value - min_value) / 9;
   int scaled = current_value / bucket_size;
   return scaled;
 }
@@ -50,28 +50,51 @@ int freeRam () {
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
 }
 
-
+String time_name[3] = {"sec", "min", "hour"};
 class Measurement_History {
   public:
     const static int history_size = 40;
     const static int history_chars = history_size / 5; // cuts lower and should have bound of 8
 
-    int history[history_size];
+    int history[3][history_size]; // 0 == seconds, 1 == minutes, 2 == hours
+    int current_count[2] = {0, 0};
+    int current_sum[2] = {0, 0};
+
     int max_value = 255;
     int min_value = 0;
-    String name = "Temperature";
+    String name;
 
+    Measurement_History() {
+      name = "Measurement";
+    }
     Measurement_History(String measurement_name) {
       name = measurement_name;
     }
 
     void add_measurement(int measurement) {
-      //slide measurements forgetting oldest
+      add_measurement(measurement, 0); // add seconds measurment
+    }
+
+    void add_measurement(int measurement, int history[]) {
       for (int i = 0; i < history_size - 1; i++) {
         history[i] = history[i + 1];
       }
       history[history_size - 1] = measurement;
-    }    
+    }
+
+    void add_measurement(int measurement, int time_scale) {
+      add_measurement(measurement, history[time_scale]);
+      if (time_scale < 3) {
+        current_count[time_scale]++;
+        current_sum[time_scale] += measurement;
+        if (current_count[time_scale] >= 60) {
+          current_count[time_scale] = 0;
+          int current_avg = current_sum[time_scale] / 60;
+          current_sum[time_scale] = 0;
+          add_measurement(current_avg, time_scale + 1);
+        }
+      }
+    }
 };
 
 class LCD_plot_char {
@@ -106,20 +129,20 @@ class LCD_Printer {
       lcd.setCursor(row, col);
       lcd.print(measurement.name);
       lcd.print(":");
-      lcd.print(measurement.history[measurement.history_size - 1]);
+      lcd.print(measurement.history[0][measurement.history_size - 1]);
     }
 
-    static void plot(Measurement_History &measurement, int col, int row) {
-      for (int i = 0; i < measurement.history_chars; i++) {
+    static void plot(int history[], int col, int row) {
+      for (int i = 0; i < Measurement_History::history_chars; i++) {
         if (DEBUG_LEVEL > 5) {
-          printArray(measurement.history + (char_width * i), char_width);
+          printArray(history + (char_width * i), char_width);
         }
-        LCD_plot_char * plot_char = new LCD_plot_char(measurement.history + (char_width * i));
+        LCD_plot_char * plot_char = new LCD_plot_char(history + (char_width * i));
         plot_char->createChar(i);
         delete plot_char;
       }
       lcd.setCursor(row, col);
-      for (int i = 0; i < measurement.history_chars; i++) {
+      for (int i = 0; i < Measurement_History::history_chars; i++) {
         lcd.write(byte(i));
       }
     }
@@ -138,11 +161,19 @@ void update_measurement(Measurement_History &measurement_hist) {
 
 }
 
-void print_measurement_data(Measurement_History &measurement);
-void print_measurement_data(Measurement_History &measurement) {
+void print_measurement_data(Measurement_History &measurement, int time_scale);
+void print_measurement_data(Measurement_History &measurement, int time_scale) {
+  lcd.setCursor(9, 1);
+  lcd.print(time_name[time_scale]);
   LCD_Printer::print_name_value(measurement, 0, 0);
-  LCD_Printer::plot(measurement, 1, 0);
+  LCD_Printer::plot(measurement.history[time_scale], 1, 0);
+
 }
+
+int measurments_count = 3;
+Measurement_History m_temp = Measurement_History("Temperature");
+Measurement_History m_humid = Measurement_History("Humidity");
+Measurement_History m_light = Measurement_History("Light");
 
 void setup() {
   Serial.begin(9600);
@@ -150,32 +181,48 @@ void setup() {
   lcd.blink();
   lcd.print("Start :)...");
   delay(2000);
+
 }
 
-Measurement_History temperature_hist = Measurement_History("Temperature");
-Measurement_History humidity_hist = Measurement_History("Humidity");
 
-int current_hist = 1;
+
+
+
+int current_measurement = 0;
+int current_time_scale = 0;
 int current_plot_seconds = 0;
 
 void loop() {
   Serial.println("Start");
+  Serial.print("Ram:");
+  Serial.println(freeRam());
 
-  if (current_plot_seconds > 10) {
+  if (current_plot_seconds > 30) {
     current_plot_seconds = 0;
-    current_hist = (current_hist + 1) % 2;
-    lcd.clear();  
+    current_measurement = (current_measurement + 1) % measurments_count;
+    if (current_measurement == 0) {
+      current_time_scale = (current_time_scale + 1) % 3;
+    }
+    lcd.clear();
   }
 
-  update_measurement(temperature_hist);
-  update_measurement(humidity_hist);
+  update_measurement(m_temp);
+  update_measurement(m_humid);
+  update_measurement(m_light);
 
-  if (current_hist == 0) {
-    print_measurement_data(temperature_hist);
+  switch (current_measurement) {
+    case 0:
+      print_measurement_data(m_temp, current_time_scale);
+      break;
+    case 1:
+      print_measurement_data(m_humid, current_time_scale);
+      break;
+    case 2:
+      print_measurement_data(m_light, current_time_scale);
+      break;
   }
-  else {
-    print_measurement_data(humidity_hist);
-  }
+
+
   current_plot_seconds++;
 
 
