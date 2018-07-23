@@ -175,6 +175,8 @@ Measurement_History m_temp = Measurement_History("Temperature");
 Measurement_History m_humid = Measurement_History("Humidity");
 Measurement_History m_light = Measurement_History("Light");
 
+Measurement_History * measurements[] = {&m_temp, &m_humid, &m_light};
+
 void setup() {
   Serial.begin(9600);
   lcd.begin(16, 2);
@@ -202,21 +204,12 @@ void loop() {
     lcd.clear();
   }
 
-  update_measurement(m_temp);
-  update_measurement(m_humid);
-  update_measurement(m_light);
-
-  switch (current_measurement) {
-    case 0:
-      print_measurement_data(m_temp, current_time_scale);
-      break;
-    case 1:
-      print_measurement_data(m_humid, current_time_scale);
-      break;
-    case 2:
-      print_measurement_data(m_light, current_time_scale);
-      break;
+  for (int i = 0; i < measurments_count; i++) {
+    update_measurement(*measurements[i]);
   }
+
+  print_measurement_data(*measurements[current_measurement], current_time_scale);
+
   current_plot_seconds++;
 
   Serial.print("Ram:");
