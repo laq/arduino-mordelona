@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <LiquidCrystal.h>
-#include "lcd_plotter.h"
+#include "lcd_measurement.h"
 
 // initialize the library by associating any needed LCD interface pin
 // with the arduino pin number it is connected to

@@ -23,8 +23,7 @@ class LCD_plotter {
 class Measurement_History {
     friend class LCD_Printer;
   public:
-    const static int history_size = 40;
-    const static int history_chars = history_size / 5; // cuts lower and should have bound of 8
+    const static int history_size = 40;    
   private:
     int max_value = 255;
     int min_value = 0;

@@ -1,4 +1,4 @@
-#include "lcd_plotter.h"
+#include "lcd_measurement.h"
 #include <LiquidCrystal.h>
 
 const int LCD_PLOTTER_DEBUG_LEVEL = 3;// 0 to 10, 0=No debug
@@ -40,10 +40,10 @@ LCD_plotter::LCD_plotter(LiquidCrystal &lcd_object) {
   lcd = &lcd_object;
 }
 
-
+//plot_data_lenght max 40, but neither tested with less
 void LCD_plotter::plot(byte plot_data[],int plot_data_length, int col, int row) {
   int plot_chars = plot_data_length / 5;
-  for (int i = 0; i < Measurement_History::history_chars; i++) {
+  for (int i = 0; i < plot_chars; i++) {
     if (LCD_PLOTTER_DEBUG_LEVEL > 5) {
       printArray(plot_data + (char_width * i), char_width);
     }
@@ -52,7 +52,7 @@ void LCD_plotter::plot(byte plot_data[],int plot_data_length, int col, int row) 
     delete plot_char;
   }
   lcd->setCursor(row, col);
-  for (int i = 0; i < Measurement_History::history_chars; i++) {
+  for (int i = 0; i < plot_chars; i++) {
     lcd->write(byte(i));
   }
 }
@@ -104,8 +104,7 @@ void LCD_Printer::print_name_value(Measurement_History &measurement, int col, in
 }
 
 void LCD_Printer::plot(Measurement_History &measurement, int time_scale, int col, int row) {
-  lcd_plotter.plot(measurement.history[time_scale],Measurement_History::history_size , col, row);
-  
+  lcd_plotter.plot(measurement.history[time_scale],Measurement_History::history_size , col, row); 
 }
 
 
