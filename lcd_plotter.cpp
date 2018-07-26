@@ -16,6 +16,50 @@ void printArray(byte array[], int size) {
   Serial.println("]");
 }
 
+LCD_plot_char::LCD_plot_char(byte plot[5]) {
+  for (int i = 0; i < 5; i++) {
+    int row = 8 - plot[i];
+    for (int j = row; j < 8; j++) {
+      plot_char[j] += get_column_value(i);
+    }
+  }
+}
+
+void LCD_plot_char::createChar(int lcd_save_pos, LiquidCrystal &lcd) {
+  lcd.createChar(lcd_save_pos, plot_char);
+}
+
+int LCD_plot_char::get_column_value(int column) {
+  //int column_value[5] = {16, 8, 4, 2, 1};
+  int exponent = 4 - column;
+  int power = 1 << exponent; // 2^exponent
+  return power;
+}
+
+LCD_plotter::LCD_plotter(LiquidCrystal &lcd_object) {
+  lcd = &lcd_object;
+}
+
+
+void LCD_plotter::plot(byte plot_data[],int plot_data_length, int col, int row) {
+  int plot_chars = plot_data_length / 5;
+  for (int i = 0; i < Measurement_History::history_chars; i++) {
+    if (LCD_PLOTTER_DEBUG_LEVEL > 5) {
+      printArray(plot_data + (char_width * i), char_width);
+    }
+    LCD_plot_char * plot_char = new LCD_plot_char(plot_data + (char_width * i));
+    plot_char->createChar(i, *lcd);
+    delete plot_char;
+  }
+  lcd->setCursor(row, col);
+  for (int i = 0; i < Measurement_History::history_chars; i++) {
+    lcd->write(byte(i));
+  }
+}
+
+
+
+
 Measurement_History::Measurement_History() {
   name = "Measurement";
 }
@@ -48,29 +92,8 @@ void Measurement_History::add_measurement(byte measurement, int time_scale) {
   }
 }
 
-
-LCD_plot_char::LCD_plot_char(byte plot[5]) {
-  for (int i = 0; i < 5; i++) {
-    int row = 8 - plot[i];
-    for (int j = row; j < 8; j++) {
-      plot_char[j] += get_column_value(i);
-    }
-  }
-}
-
-void LCD_plot_char::createChar(int lcd_save_pos, LiquidCrystal &lcd) {
-  lcd.createChar(lcd_save_pos, plot_char);
-}
-
-int LCD_plot_char::get_column_value(int column) {
-  //int column_value[5] = {16, 8, 4, 2, 1};
-  int exponent = 4 - column;
-  int power = 1 << exponent; // 2^exponent
-  return power;
-}
-
-LCD_Printer::LCD_Printer(LiquidCrystal &lcd_screen) {
-  lcd = &lcd_screen;
+LCD_Printer::LCD_Printer(LiquidCrystal &lcd_screen): lcd_plotter(lcd_screen) {
+  lcd = &lcd_screen;  
 }
 
 void LCD_Printer::print_name_value(Measurement_History &measurement, int col, int row) {
@@ -80,23 +103,13 @@ void LCD_Printer::print_name_value(Measurement_History &measurement, int col, in
   lcd->print(measurement.history[0][measurement.history_size - 1]);
 }
 
-void LCD_Printer::plot(byte history[], int col, int row) {
-  for (int i = 0; i < Measurement_History::history_chars; i++) {
-    if (LCD_PLOTTER_DEBUG_LEVEL > 5) {
-      printArray(history + (char_width * i), char_width);
-    }
-    LCD_plot_char * plot_char = new LCD_plot_char(history + (char_width * i));
-    plot_char->createChar(i, *lcd);
-    delete plot_char;
-  }
-  lcd->setCursor(row, col);
-  for (int i = 0; i < Measurement_History::history_chars; i++) {
-    lcd->write(byte(i));
-  }
+void LCD_Printer::plot(Measurement_History &measurement, int time_scale, int col, int row) {
+  lcd_plotter.plot(measurement.history[time_scale],Measurement_History::history_size , col, row);
+  
 }
 
-void LCD_Printer::plot(Measurement_History &measurement, int time_scale, int col, int row) {
-  plot(measurement.history[time_scale], col, row);
-}
+
+
+
 
 
