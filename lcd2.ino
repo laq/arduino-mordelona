@@ -58,8 +58,7 @@ void print_measurement_data(Measurement_History &measurement, int time_scale) {
   lcd.setCursor(9, 1);
   lcd.print(time_name[time_scale]);
   lcd_printer.print_name_value(measurement, 0, 0);
-  lcd_printer.plot(measurement.history[time_scale], 1, 0);
-
+  lcd_printer.plot(measurement, time_scale, 1, 0);
 }
 
 int measurments_count = 3;

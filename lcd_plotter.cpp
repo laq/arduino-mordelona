@@ -69,7 +69,7 @@ int LCD_plot_char::get_column_value(int column) {
   return power;
 }
 
-LCD_Printer::LCD_Printer(LiquidCrystal &lcd_screen){
+LCD_Printer::LCD_Printer(LiquidCrystal &lcd_screen) {
   lcd = &lcd_screen;
 }
 
@@ -94,4 +94,9 @@ void LCD_Printer::plot(byte history[], int col, int row) {
     lcd->write(byte(i));
   }
 }
+
+void LCD_Printer::plot(Measurement_History &measurement, int time_scale, int col, int row) {
+  plot(measurement.history[time_scale], col, row);
+}
+
 
