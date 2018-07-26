@@ -1,3 +1,7 @@
+/*
+ *    @laq 
+ *    2018
+ */
 #include <Arduino.h>
 #include <LiquidCrystal.h>
 
