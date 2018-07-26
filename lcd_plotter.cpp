@@ -41,7 +41,7 @@ LCD_plotter::LCD_plotter(LiquidCrystal &lcd_object) {
 }
 
 //plot_data_lenght max 40, but neither tested with less
-void LCD_plotter::plot(byte plot_data[],int plot_data_length, int col, int row) {
+void LCD_plotter::plot(byte plot_data[], int plot_data_length, int col, int row) {
   int plot_chars = plot_data_length / char_width;
   for (int i = 0; i < plot_chars; i++) {
     if (LCD_PLOTTER_DEBUG_LEVEL > 5) {

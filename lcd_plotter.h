@@ -13,8 +13,8 @@ class LCD_plot_char {
 class LCD_plotter {
   private:
     LiquidCrystal * lcd;
-  public:      
-      LCD_plotter(LiquidCrystal &lcd_pointer);
-      void plot(byte plot_data[],int plot_data_length, int col, int row);
+  public:
+    LCD_plotter(LiquidCrystal &lcd_pointer);
+    void plot(byte plot_data[], int plot_data_length, int col, int row);
 };
 

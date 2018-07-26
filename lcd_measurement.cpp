@@ -34,7 +34,7 @@ void Measurement_History::add_measurement(byte measurement, int time_scale) {
 }
 
 LCD_Printer::LCD_Printer(LiquidCrystal &lcd_screen): lcd_plotter(lcd_screen) {
-  lcd = &lcd_screen;  
+  lcd = &lcd_screen;
 }
 
 void LCD_Printer::print_name_value(Measurement_History &measurement, int col, int row) {
@@ -45,7 +45,7 @@ void LCD_Printer::print_name_value(Measurement_History &measurement, int col, in
 }
 
 void LCD_Printer::plot(Measurement_History &measurement, int time_scale, int col, int row) {
-  lcd_plotter.plot(measurement.history[time_scale],Measurement_History::history_size , col, row); 
+  lcd_plotter.plot(measurement.history[time_scale], Measurement_History::history_size , col, row);
 }
 
 

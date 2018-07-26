@@ -5,7 +5,7 @@
 class Measurement_History {
     friend class LCD_Printer;
   public:
-    const static int history_size = 40;    
+    const static int history_size = 40;
   private:
     int max_value = 255;
     int min_value = 0;
